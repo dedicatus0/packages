@@ -6,13 +6,13 @@ include $(TOPDIR)/rules.mk
 
 PKG_NPM_NAME:=modbus-serial
 PKG_NAME:=node-$(PKG_NPM_NAME)
-PKG_VERSION:=8.0.21
+PKG_VERSION:=8.0.23
 PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_NPM_NAME)-$(PKG_VERSION).tgz
 PKG_SOURCE_URL:=https://mirrors.tencent.com/npm/$(PKG_NPM_NAME)/-/ \
                 https://registry.npmjs.org/$(PKG_NPM_NAME)/-/
-PKG_HASH:=bae2d695fe96631afb9d157eb2901ff2c7fc070220893de49325406b1b34e91f
+PKG_HASH:=92ff598dc307725be9fa9215926a239ba7df9e65462c3a34789565e2fc139ebf
 
 PKG_MAINTAINER:=Hirokazu MORIKAWA <morikw2@gmail.com>
 PKG_LICENSE:=ISC

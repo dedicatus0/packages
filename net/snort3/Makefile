@@ -6,12 +6,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=snort3
-PKG_VERSION:=3.9.5.0
-PKG_RELEASE:=5
+PKG_VERSION:=3.9.6.0
+PKG_RELEASE:=2
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=https://codeload.github.com/snort3/snort3/tar.gz/$(PKG_VERSION)?
-PKG_HASH:=e2e36a8db2c4c26a6ff58ea58839339260319eba25d0eb901ddb7210f4fa4b4c
+PKG_HASH:=2335678bc5ff4f876dcdb6985407a5312b0f3bb470da29e2926f57f942ce3b94
 
 PKG_MAINTAINER:=W. Michael Petullo <mike@flyn.org>, John Audia <therealgraysky@proton.me>
 PKG_LICENSE:=GPL-2.0-only
@@ -28,8 +28,9 @@ define Package/snort3
   DEPENDS:=+libstdcpp +libdaq3 +libdnet +libopenssl +libpcap +libpcre2 \
     +libpthread +libuuid +zlib +libhwloc +USE_MUSL:libtirpc @HAS_LUAJIT_ARCH +luajit +libatomic \
     +kmod-nft-queue +liblzma +ucode +ucode-mod-fs +ucode-mod-uci \
-    +PACKAGE_gperftools-runtime:gperftools-runtime \
-    +PACKAGE_vectorscan-runtime:vectorscan-runtime
+    +PACKAGE_gperftools:gperftools \
+    +PACKAGE_vectorscan:vectorscan
+  USERID:=snort=975:snort=975
   TITLE:=Lightweight Network Intrusion Detection System
   URL:=http://www.snort.org/
   MENU:=1
@@ -41,6 +42,14 @@ define Package/snort3/description
   and packet logging on IP networks.  It utilizes a combination of protocol
   analysis and pattern matching in order to detect anomalies, misuse and
   attacks.
+
+  Note:
+    When compiling from source, and if your target supports them, optionally
+    enable runtime dependencies for improved performance:
+      - gperftools
+      - vectorscan
+    These are not enabled by default and must be manually selected in menuconfig
+    to take advantage of their benefits.
 endef
 
 CMAKE_OPTIONS += \
@@ -56,25 +65,10 @@ CMAKE_OPTIONS += \
 	-DMAKE_PDF_DOC:BOOL=NO \
 	-DMAKE_TEXT_DOC:BOOL=NO \
 	-DHAVE_LIBUNWIND=OFF \
-	-DHAVE_LZMA=ON
-
-ifneq ($(findstring powerpc,$(CONFIG_ARCH))$(findstring mips,$(CONFIG_ARCH)),)
-  CMAKE_OPTIONS += \
-	-DENABLE_TCMALLOC=OFF
-else
-  CMAKE_OPTIONS += \
-	-DENABLE_TCMALLOC=ON \
-	-DTCMALLOC_LIBRARIES=$(STAGING_DIR)/usr/lib/libtcmalloc.so
-endif
-
-ifneq ($(findstring x86_64,$(CONFIG_ARCH))$(findstring aarch64,$(CONFIG_ARCH)),)
-  CMAKE_OPTIONS += \
-	-DENABLE_HYPERSCAN=ON \
-	-DHS_INCLUDE_DIRS=$(STAGING_DIR)/usr/include/hs
-else
-  CMAKE_OPTIONS += \
-	-DENABLE_HYPERSCAN=OFF
-endif
+	-DHAVE_LZMA=ON \
+	-DENABLE_TCMALLOC=$(if $(CONFIG_PACKAGE_gperftools),ON,OFF) \
+	-DENABLE_HYPERSCAN=$(if $(CONFIG_PACKAGE_vectorscan),ON,OFF) \
+	$(if $(CONFIG_PACKAGE_vectorscan),-DHS_INCLUDE_DIRS=$(STAGING_DIR)/usr/include/hs)
 
 TARGET_CFLAGS += -I$(STAGING_DIR)/usr/include/daq3
 
